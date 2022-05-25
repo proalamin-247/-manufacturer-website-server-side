@@ -3,7 +3,7 @@ const express = require('express')
 const cors = require('cors');
 require('dotenv').config()
 const app = express();
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -17,6 +17,7 @@ async function run() {
         await client.connect();
         const partCollection = client.db('manufacturer').collection('parts');
         const reviewCollection = client.db('manufacturer').collection('reviews');
+        const orderCollection = client.db('manufacturer').collection('orders');
 
         // load all parts 
         app.get('/part', async(req, res)=>{
@@ -49,6 +50,14 @@ async function run() {
             const result = await reviewCollection.insertOne(newReview);
             res.send(result);
         })
+
+        // post order details
+        app.post('/order', async (req, res) => {
+            const newOrder = req.body;
+            const result = await orderCollection.insertOne(newOrder);
+            res.send(result);
+        })
+
 
     }
     finally {
