@@ -95,6 +95,14 @@ async function run() {
             res.send(parts);
         })
 
+        // delete singale part/item
+        app.delete('/part/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await partCollection.deleteOne(query);
+            res.send(result);
+        })
+
 
         // load singale part
         app.get('/part/:id', async (req, res) => {
@@ -118,6 +126,13 @@ async function run() {
         app.post('/review', async (req, res) => {
             const newReview = req.body;
             const result = await reviewCollection.insertOne(newReview);
+            res.send(result);
+        })
+
+        // post product
+        app.post('/addProduct', async (req, res) => {
+            const newProduct = req.body;
+            const result = await partCollection.insertOne(newProduct);
             res.send(result);
         })
 
