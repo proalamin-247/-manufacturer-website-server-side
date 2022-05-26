@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config()
 const app = express();
 const jwt = require('jsonwebtoken');
+const { get } = require('express/lib/response');
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -52,7 +53,7 @@ async function run() {
         })
 
 
-        // user admin api
+        // user make admin api
         app.put('/user/admin/:email',verifyJWT, async (req, res) => {
             const email = req.params.email;
             const requester = req.decoded.email;
@@ -68,8 +69,6 @@ async function run() {
             else{
                 res.status(403).send({message: 'forbidden'});
             }
-
-
         })
 
 
@@ -77,6 +76,14 @@ async function run() {
         app.get('/user', verifyJWT, async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
+        })
+
+        // get admin only
+        app.get('/admin/:email', async(req, res)=>{
+            const email=req.params.email;
+            const user = await userCollection.findOne({email: email});
+            const isAdmin = user.role === 'admin';
+            res.send({admin: isAdmin});
         })
 
 
