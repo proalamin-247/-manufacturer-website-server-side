@@ -51,12 +51,24 @@ async function run() {
             res.send({ result, token });
         })
 
+
+        // user admin api
+        app.put('/user/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: {role: 'admin'},
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+
         // get user
-        app.get('/user', async(req, res)=>{
+        app.get('/user',verifyJWT, async(req, res)=>{
             const users= await userCollection.find().toArray();
             res.send(users);
         })
-
 
 
         // load all parts 
@@ -76,6 +88,7 @@ async function run() {
             res.send(part);
         })
 
+
         // load all reviews 
         app.get('/review', async (req, res) => {
             const query = {};
@@ -83,6 +96,7 @@ async function run() {
             const reviews = await cursor.toArray();
             res.send(reviews);
         })
+
 
         // post singale review
         app.post('/review', async (req, res) => {
