@@ -37,7 +37,7 @@ async function run() {
         const userCollection = client.db('manufacturer').collection('users');
 
 
-        // user 
+        // user save database
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -49,6 +49,12 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc, options);
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.send({ result, token });
+        })
+
+        // get user
+        app.get('/user', async(req, res)=>{
+            const users= await userCollection.find().toArray();
+            res.send(users);
         })
 
 
