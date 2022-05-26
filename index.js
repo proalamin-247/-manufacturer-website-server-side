@@ -12,7 +12,7 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.vvzcx.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-function verifyJWT(req, res, next){
+function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         return res.status(401).send({ message: 'UnAuthorized access' });
@@ -53,35 +53,44 @@ async function run() {
 
 
         // user admin api
-        app.put('/user/admin/:email', async (req, res) => {
+        app.put('/user/admin/:email',verifyJWT, async (req, res) => {
             const email = req.params.email;
-            const filter = { email: email };
-            const updateDoc = {
-                $set: {role: 'admin'},
-            };
-            const result = await userCollection.updateOne(filter, updateDoc);
-            res.send(result);
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            if (requesterAccount.role === 'admin') {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' },
+                };
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+            else{
+                res.status(403).send({message: 'forbidden'});
+            }
+
+
         })
 
 
         // get user
-        app.get('/user',verifyJWT, async(req, res)=>{
-            const users= await userCollection.find().toArray();
+        app.get('/user', verifyJWT, async (req, res) => {
+            const users = await userCollection.find().toArray();
             res.send(users);
         })
 
 
         // load all parts 
-        app.get('/part', async(req, res)=>{
-            const query={};
+        app.get('/part', async (req, res) => {
+            const query = {};
             const cursor = partCollection.find(query);
-            const parts= await cursor.toArray();
+            const parts = await cursor.toArray();
             res.send(parts);
         })
 
 
         // load singale part
-        app.get('/part/:id', async(req, res)=>{
+        app.get('/part/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const part = await partCollection.findOne(query);
@@ -113,18 +122,18 @@ async function run() {
         })
 
         // get order deatils
-        app.get('/order',verifyJWT, async (req, res) => {
+        app.get('/order', verifyJWT, async (req, res) => {
             const userEmail = req.query.userEmail;
             const decodedEmail = req.decoded.email;
-            if (userEmail===decodedEmail){
+            if (userEmail === decodedEmail) {
                 const query = { userEmail: userEmail };
                 const orders = await orderCollection.find(query).toArray();
                 return res.send(orders);
             }
-            else{
-                return res.status(403).send({message: 'forbidden access'});
+            else {
+                return res.status(403).send({ message: 'forbidden access' });
             }
-            
+
         })
 
 
